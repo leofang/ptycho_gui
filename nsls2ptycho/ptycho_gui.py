@@ -5,12 +5,12 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QFileDialog, QAction
 
 from nsls2ptycho.ui import ui_ptycho
-from nsls2ptycho.core.utils import clean_shared_memory, get_mpi_num_processes
-from nsls2ptycho.core.ptycho_param import Param
+from nsls2ptycho.core.utils import clean_shared_memory, get_mpi_num_processes, get_working_directory
 from nsls2ptycho.core.ptycho_recon import PtychoReconWorker, PtychoReconFakeWorker, HardWorker
 from nsls2ptycho.core.ptycho_qt_utils import PtychoStream
 from nsls2ptycho.core.widgets.mplcanvas import load_image_pil
 from nsls2ptycho.core.ptycho.utils import parse_config
+from nsls2ptycho.core.ptycho.ptycho_trans_ml import ptycho_trans
 from nsls2ptycho._version import __version__
 
 # databroker related
@@ -46,7 +46,7 @@ shm_list = []
 
 
 class MainWindow(QtWidgets.QMainWindow, ui_ptycho.Ui_MainWindow):
-    def __init__(self, parent=None, param:Param=None):
+    def __init__(self, parent=None, param=None):
         super().__init__(parent)
         self.setupUi(self)
         QtWidgets.QApplication.setStyle('Plastique')
@@ -103,7 +103,8 @@ class MainWindow(QtWidgets.QMainWindow, ui_ptycho.Ui_MainWindow):
 
         # init.
         if param is None:
-            self.param = Param() # default
+            self.param = ptycho_trans(None) # default
+            self.param.working_directory = get_working_directory()
         else:
             self.param = param
         self._prb = None
@@ -202,7 +203,7 @@ class MainWindow(QtWidgets.QMainWindow, ui_ptycho.Ui_MainWindow):
     def retrieveConfigHistory(self):
         if os.path.isfile(self._config_path):
             try:
-                param = parse_config(self._config_path, Param())
+                param = parse_config(self._config_path, self.param)
                 self.menu_save_config_history.setChecked(param.save_config_history)
                 if param.save_config_history:
                     self.param = param
@@ -216,13 +217,15 @@ class MainWindow(QtWidgets.QMainWindow, ui_ptycho.Ui_MainWindow):
 
     def removeConfigHistory(self):
         if os.path.isfile(self._config_path):
-            self.param = Param() # default
+            self.param = ptycho_trans(None) # default
             os.remove(self._config_path)
             self.update_gui_from_param()
         
 
     def update_param_from_gui(self):
         p = self.param
+        # inform backend we use GUI
+        p.gui = True
 
         # data group
         p.scan_num = str(self.le_scan_num.text())

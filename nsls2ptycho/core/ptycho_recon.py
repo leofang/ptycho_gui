@@ -1,6 +1,5 @@
 from PyQt5 import QtCore
 from datetime import datetime
-from nsls2ptycho.core.ptycho_param import Param
 import sys, os
 import pickle     # dump param into disk
 import subprocess # call mpirun from shell
@@ -21,7 +20,7 @@ class PtychoReconWorker(QtCore.QThread):
     update_signal = QtCore.pyqtSignal(int, object) # (interation number, chi arrays)
     process = None # subprocess 
 
-    def __init__(self, param:Param=None, parent=None):
+    def __init__(self, param=None, parent=None):
         super().__init__(parent)
         self.param = param
         self.return_value = None
@@ -83,7 +82,7 @@ class PtychoReconWorker(QtCore.QThread):
 
         return stdout_2.split()
 
-    def recon_api(self, param:Param, update_fcn=None):
+    def recon_api(self, param, update_fcn=None):
         # "1" is just a placeholder to be overwritten soon
         mpirun_command = ["mpirun", "-n", "1", "python", "-W", "ignore", "-m","nsls2ptycho.core.ptycho.recon_ptycho_gui"]
 
@@ -256,7 +255,7 @@ class HardWorker(QtCore.QThread):
 class PtychoReconFakeWorker(QtCore.QThread):
     update_signal = QtCore.pyqtSignal(int, object)
 
-    def __init__(self, param:Param=None, parent=None):
+    def __init__(self, param=None, parent=None):
         super().__init__(parent)
         self.param = param
 

@@ -112,3 +112,20 @@ def set_flush_early(mpirun_command):
     if 'MPICH' in MPI.get_vendor()[0] or 'MVAPICH' in MPI.get_vendor()[0]:
         mpirun_command.insert(-2, "-u") # force flush asap (MPICH is weird...)
     return mpirun_command
+
+
+def get_working_directory():
+    config_path = os.path.expanduser("~") + "/.ptycho_gui/.ptycho_gui_config"
+    working_dir = ''
+    try:
+        with open(config_path, "r") as config:
+            while True:
+                line = config.readline()
+                if line == '':
+                    raise RuntimeError("working_directory not found, abort!")
+                if line.startswith("working_directory"):
+                    working_dir = line.split()[2]
+                    break
+    except FileNotFoundError:
+        working_dir = os.path.expanduser("~") # default to user's home
+    return working_dir
