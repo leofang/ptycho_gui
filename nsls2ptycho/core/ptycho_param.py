@@ -96,7 +96,7 @@ class Param(object):
         self.start_update_object = 0
         self.ml_mode = 'Poisson'     # mode for ML
         self.ml_weight = 0.1
-        self.dm_version = 2
+        self.dm_version = 3
         self.cal_scan_pattern_flag = False
 
         self.nth = 5                 # number of points in the first ring
